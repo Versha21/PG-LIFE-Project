@@ -1,37 +1,61 @@
 <?php
 require_once __DIR__ . '/../includes/database_connect.php';
 
-$full_name = $_POST['full_name'];
-$phone = $_POST['phone'];
-$email = $_POST['email'];
-$password = $_POST['password'];
-$password = sha1($password);
-$college_name = $_POST['college_name'];
-$gender = $_POST['gender'];
+// Validate and sanitize inputs
+$full_name = isset($_POST['full_name']) ? trim($_POST['full_name']) : '';
+$phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+$email = isset($_POST['email']) ? trim($_POST['email']) : '';
+$password = isset($_POST['password']) ? $_POST['password'] : '';
+$college_name = isset($_POST['college_name']) ? trim($_POST['college_name']) : '';
+$gender = isset($_POST['gender']) ? trim($_POST['gender']) : '';
 
-$sql = "SELECT * FROM users WHERE email='$email'";
-$result = mysqli_query($conn, $sql);
+// Validate required fields
+if (empty($full_name) || empty($phone) || empty($email) || empty($password) || empty($college_name) || empty($gender)) {
+    echo json_encode(array("success" => false, "message" => "All fields are required!"));
+    exit;
+}
+
+// Validate email format
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(array("success" => false, "message" => "Invalid email format!"));
+    exit;
+}
+
+// Validate phone number (basic validation)
+if (!preg_match('/^[0-9]{10}$/', $phone)) {
+    echo json_encode(array("success" => false, "message" => "Phone number must be 10 digits!"));
+    exit;
+}
+
+$password_hashed = sha1($password);
+
+// Check if email already exists using prepared statement
+$sql_check = "SELECT * FROM users WHERE email = ?";
+$stmt_check = mysqli_prepare($conn, $sql_check);
+mysqli_stmt_bind_param($stmt_check, "s", $email);
+mysqli_stmt_execute($stmt_check);
+$result = mysqli_stmt_get_result($stmt_check);
+
 if (!$result) {
-    $response = array("success" => false, "message" => "Something went wrong!");
-    echo json_encode($response);
-    return;
+    echo json_encode(array("success" => false, "message" => "Database error!"));
+    exit;
 }
 
-$row_count = mysqli_num_rows($result);
-if ($row_count != 0) {
-    $response = array("success" => false, "message" => "This email id is already registered with us!");
-    echo json_encode($response);
-    return;
+if (mysqli_num_rows($result) != 0) {
+    echo json_encode(array("success" => false, "message" => "This email id is already registered with us!"));
+    exit;
 }
 
-$sql = "INSERT INTO users (email, password, full_name, phone, gender, college_name) VALUES ('$email', '$password', '$full_name', '$phone', '$gender', '$college_name')";
-$result = mysqli_query($conn, $sql);
-if (!$result) {
-    $response = array("success" => false, "message" => "Something went wrong!");
-    echo json_encode($response);
-    return;
+// Insert new user using prepared statement
+$sql_insert = "INSERT INTO users (email, password, full_name, phone, gender, college_name) VALUES (?, ?, ?, ?, ?, ?)";
+$stmt_insert = mysqli_prepare($conn, $sql_insert);
+mysqli_stmt_bind_param($stmt_insert, "ssssss", $email, $password_hashed, $full_name, $phone, $gender, $college_name);
+$insert_result = mysqli_stmt_execute($stmt_insert);
+
+if (!$insert_result) {
+    echo json_encode(array("success" => false, "message" => "Failed to create account!"));
+    exit;
 }
 
-$response = array("success" => true, "message" => "Your account has been created successfully!");
-echo json_encode($response);
+echo json_encode(array("success" => true, "message" => "Your account has been created successfully!"));
 mysqli_close($conn);

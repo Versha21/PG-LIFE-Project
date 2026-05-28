@@ -2,23 +2,39 @@
 session_start();
 require_once __DIR__ . '/../includes/database_connect.php';
 
-$email = $_POST['email'];
-$password = $_POST['password'];
-$password = sha1($password);
+// Validate and sanitize inputs
+$email = isset($_POST['email']) ? trim($_POST['email']) : '';
+$password = isset($_POST['password']) ? $_POST['password'] : '';
 
-$sql = "SELECT * FROM users WHERE email='$email' AND password='$password'";
-$result = mysqli_query($conn, $sql);
-if (!$result) {
-    $response = array("success" => false, "message" => "Something went wrong!");
-    echo json_encode($response);
-    return;
+// Validate required fields
+if (empty($email) || empty($password)) {
+    echo json_encode(array("success" => false, "message" => "Email and password are required!"));
+    exit;
 }
 
-$row_count = mysqli_num_rows($result);
-if ($row_count == 0) {
-    $response = array("success" => false, "message" => "Login failed! Invalid email or password.");
-    echo json_encode($response);
-    return;
+// Validate email format
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(array("success" => false, "message" => "Invalid email format!"));
+    exit;
+}
+
+$password_hashed = sha1($password);
+
+// Check user credentials using prepared statement
+$sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "ss", $email, $password_hashed);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+if (!$result) {
+    echo json_encode(array("success" => false, "message" => "Database error!"));
+    exit;
+}
+
+if (mysqli_num_rows($result) == 0) {
+    echo json_encode(array("success" => false, "message" => "Login failed! Invalid email or password."));
+    exit;
 }
 
 $row = mysqli_fetch_assoc($result);
@@ -26,6 +42,5 @@ $_SESSION['user_id'] = $row['id'];
 $_SESSION['full_name'] = $row['full_name'];
 $_SESSION['email'] = $row['email'];
 
-$response = array("success" => true, "message" => "Login successful!");
-echo json_encode($response);
+echo json_encode(array("success" => true, "message" => "Login successful!"));
 mysqli_close($conn);

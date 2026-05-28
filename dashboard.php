@@ -2,32 +2,46 @@
 session_start();
 require "includes/database_connect.php";
 
+// Check database connection
+if (!$conn) {
+    die("Database connection failed!");
+}
+
+// Check if user is logged in
 if (!isset($_SESSION["user_id"])) {
     header("location: index.php");
-    die();
+    exit;
 }
-$user_id = $_SESSION['user_id'];
 
-$sql_1 = "SELECT * FROM users WHERE id = $user_id";
-$result_1 = mysqli_query($conn, $sql_1);
+$user_id = intval($_SESSION['user_id']);
+
+// Get user information using prepared statement
+$sql_1 = "SELECT * FROM users WHERE id = ?";
+$stmt_1 = mysqli_prepare($conn, $sql_1);
+mysqli_stmt_bind_param($stmt_1, "i", $user_id);
+mysqli_stmt_execute($stmt_1);
+$result_1 = mysqli_stmt_get_result($stmt_1);
+
 if (!$result_1) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $user = mysqli_fetch_assoc($result_1);
 if (!$user) {
-    echo "Something went wrong!";
-    return;
+    die("User not found!");
 }
 
-$sql_2 = "SELECT * 
+// Get interested properties for this user using prepared statement
+$sql_2 = "SELECT *
             FROM interested_users_properties iup
             INNER JOIN properties p ON iup.property_id = p.id
-            WHERE iup.user_id = $user_id";
-$result_2 = mysqli_query($conn, $sql_2);
+            WHERE iup.user_id = ?";
+$stmt_2 = mysqli_prepare($conn, $sql_2);
+mysqli_stmt_bind_param($stmt_2, "i", $user_id);
+mysqli_stmt_execute($stmt_2);
+$result_2 = mysqli_stmt_get_result($stmt_2);
+
 if (!$result_2) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $interested_properties = mysqli_fetch_all($result_2, MYSQLI_ASSOC);
 ?>

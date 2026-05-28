@@ -2,42 +2,66 @@
 session_start();
 require "includes/database_connect.php";
 
-$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
-$city_name = $_GET["city"];
+// Check database connection
+if (!$conn) {
+    die("Database connection failed!");
+}
 
-$sql_1 = "SELECT * FROM cities WHERE name = '$city_name'";
-$result_1 = mysqli_query($conn, $sql_1);
+$user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : NULL;
+
+// Validate city_name input
+$city_name = isset($_GET["city"]) ? trim($_GET["city"]) : '';
+if (empty($city_name)) {
+    die("City name is required!");
+}
+
+// Sanitize city_name to prevent XSS
+$city_name_display = htmlspecialchars($city_name, ENT_QUOTES, 'UTF-8');
+$city_name_db = $city_name;
+
+// Get city using prepared statement
+$sql_1 = "SELECT * FROM cities WHERE name = ?";
+$stmt_1 = mysqli_prepare($conn, $sql_1);
+mysqli_stmt_bind_param($stmt_1, "s", $city_name_db);
+mysqli_stmt_execute($stmt_1);
+$result_1 = mysqli_stmt_get_result($stmt_1);
+
 if (!$result_1) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $city = mysqli_fetch_assoc($result_1);
 if (!$city) {
-    echo "Sorry! We do not have any PG listed in this city.";
-    return;
+    die("Sorry! We do not have any PG listed in this city.");
 }
-$city_id = $city['id'];
+$city_id = intval($city['id']);
 
+// Get properties for the city using prepared statement
+$sql_2 = "SELECT * FROM properties WHERE city_id = ?";
+$stmt_2 = mysqli_prepare($conn, $sql_2);
+mysqli_stmt_bind_param($stmt_2, "i", $city_id);
+mysqli_stmt_execute($stmt_2);
+$result_2 = mysqli_stmt_get_result($stmt_2);
 
-$sql_2 = "SELECT * FROM properties WHERE city_id = $city_id";
-$result_2 = mysqli_query($conn, $sql_2);
 if (!$result_2) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $properties = mysqli_fetch_all($result_2, MYSQLI_ASSOC);
 
-
-$sql_3 = "SELECT * 
+// Get interested users for properties using prepared statement
+$sql_3 = "SELECT *
             FROM interested_users_properties iup
             INNER JOIN properties p ON iup.property_id = p.id
-            WHERE p.city_id = $city_id";
-$result_3 = mysqli_query($conn, $sql_3);
+            WHERE p.city_id = ?";
+$stmt_3 = mysqli_prepare($conn, $sql_3);
+mysqli_stmt_bind_param($stmt_3, "i", $city_id);
+mysqli_stmt_execute($stmt_3);
+$result_3 = mysqli_stmt_get_result($stmt_3);
+
 if (!$result_3) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
+?>
 ?>
 
 <!DOCTYPE html>

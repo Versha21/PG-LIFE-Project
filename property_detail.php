@@ -2,54 +2,77 @@
 session_start();
 require "includes/database_connect.php";
 
-$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
-$property_id = $_GET["property_id"];
+// Check database connection
+if (!$conn) {
+    die("Database connection failed!");
+}
 
-$sql_1 = "SELECT *, p.id AS property_id, p.name AS property_name, c.name AS city_name 
+$user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : NULL;
+
+// Validate property_id input
+$property_id = isset($_GET["property_id"]) ? intval($_GET["property_id"]) : 0;
+if ($property_id <= 0) {
+    die("Invalid property ID!");
+}
+
+// Get property details using prepared statement
+$sql_1 = "SELECT *, p.id AS property_id, p.name AS property_name, c.name AS city_name
             FROM properties p
-            INNER JOIN cities c ON p.city_id = c.id 
-            WHERE p.id = $property_id";
-$result_1 = mysqli_query($conn, $sql_1);
+            INNER JOIN cities c ON p.city_id = c.id
+            WHERE p.id = ?";
+$stmt_1 = mysqli_prepare($conn, $sql_1);
+mysqli_stmt_bind_param($stmt_1, "i", $property_id);
+mysqli_stmt_execute($stmt_1);
+$result_1 = mysqli_stmt_get_result($stmt_1);
+
 if (!$result_1) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $property = mysqli_fetch_assoc($result_1);
 if (!$property) {
-    echo "Something went wrong!";
-    return;
+    die("Property not found!");
 }
 
+// Get testimonials using prepared statement
+$sql_2 = "SELECT * FROM testimonials WHERE property_id = ?";
+$stmt_2 = mysqli_prepare($conn, $sql_2);
+mysqli_stmt_bind_param($stmt_2, "i", $property_id);
+mysqli_stmt_execute($stmt_2);
+$result_2 = mysqli_stmt_get_result($stmt_2);
 
-$sql_2 = "SELECT * FROM testimonials WHERE property_id = $property_id";
-$result_2 = mysqli_query($conn, $sql_2);
 if (!$result_2) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $testimonials = mysqli_fetch_all($result_2, MYSQLI_ASSOC);
 
-
-$sql_3 = "SELECT a.* 
+// Get amenities using prepared statement
+$sql_3 = "SELECT a.*
             FROM amenities a
             INNER JOIN properties_amenities pa ON a.id = pa.amenity_id
-            WHERE pa.property_id = $property_id";
-$result_3 = mysqli_query($conn, $sql_3);
+            WHERE pa.property_id = ?";
+$stmt_3 = mysqli_prepare($conn, $sql_3);
+mysqli_stmt_bind_param($stmt_3, "i", $property_id);
+mysqli_stmt_execute($stmt_3);
+$result_3 = mysqli_stmt_get_result($stmt_3);
+
 if (!$result_3) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $amenities = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
 
+// Get interested users count using prepared statement
+$sql_4 = "SELECT * FROM interested_users_properties WHERE property_id = ?";
+$stmt_4 = mysqli_prepare($conn, $sql_4);
+mysqli_stmt_bind_param($stmt_4, "i", $property_id);
+mysqli_stmt_execute($stmt_4);
+$result_4 = mysqli_stmt_get_result($stmt_4);
 
-$sql_4 = "SELECT * FROM interested_users_properties WHERE property_id = $property_id";
-$result_4 = mysqli_query($conn, $sql_4);
 if (!$result_4) {
-    echo "Something went wrong!";
-    return;
+    die("Database query failed!");
 }
 $interested_users = mysqli_fetch_all($result_4, MYSQLI_ASSOC);
 $interested_users_count = mysqli_num_rows($result_4);
+?>
 ?>
 
 <!DOCTYPE html>
