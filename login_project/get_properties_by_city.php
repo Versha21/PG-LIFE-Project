@@ -83,7 +83,7 @@ foreach ($properties as $property) {
     if (!empty($property_images)) {
         $property_image = "img/properties/" . $property_id . "/" . basename($property_images[0]);
     } else {
-        $property_image = "img/placeholder.png"; // Fallback image
+        $property_image = "img/logo.png"; // Fallback image
     }
 
     $interested_users_count = 0;

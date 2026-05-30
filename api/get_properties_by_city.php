@@ -19,7 +19,7 @@ $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : NULL;
 // Validate city_name input
 $city_name = isset($_GET["city"]) ? trim($_GET["city"]) : '';
 if (empty($city_name)) {
-  echo json_encode(array("error" => "City name is required"));
+  echo json_encode(array());
   exit;
 }
 
@@ -34,7 +34,7 @@ mysqli_stmt_execute($stmt_1);
 $result_1 = mysqli_stmt_get_result($stmt_1);
 
 if (!$result_1) {
-  echo json_encode(array("error" => "Database query failed"));
+  echo json_encode(array());
   exit;
 }
 
@@ -53,7 +53,7 @@ mysqli_stmt_execute($stmt_2);
 $result_2 = mysqli_stmt_get_result($stmt_2);
 
 if (!$result_2) {
-  echo json_encode(array("error" => "Database query failed"));
+  echo json_encode(array());
   exit;
 }
 $properties = mysqli_fetch_all($result_2, MYSQLI_ASSOC);
@@ -69,7 +69,7 @@ mysqli_stmt_execute($stmt_3);
 $result_3 = mysqli_stmt_get_result($stmt_3);
 
 if (!$result_3) {
-  echo json_encode(array("error" => "Database query failed"));
+  echo json_encode(array());
   exit;
 }
 $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
@@ -83,7 +83,7 @@ foreach ($properties as $property) {
   if (!empty($property_images)) {
     $property_image = "img/properties/" . $property_id . "/" . basename($property_images[0]);
   } else {
-    $property_image = "img/placeholder.png"; // Fallback image
+    $property_image = "img/logo.png"; // Fallback image
   }
 
   $interested_users_count = 0;

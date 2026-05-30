@@ -62,7 +62,6 @@ if (!$result_3) {
 }
 $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
 ?>
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -100,11 +99,11 @@ $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
                 <span>Filter</span>
             </div>
             <div class="col-auto">
-                <img src="img/desc.png" alt="sort-desc" />
+                <img id="sort-desc" src="img/desc.png" alt="sort-desc" style="cursor:pointer;" />
                 <span>Highest rent first</span>
             </div>
             <div class="col-auto">
-                <img src="img/asc.png" alt="sort-asc" />
+                <img id="sort-asc" src="img/asc.png" alt="sort-asc" style="cursor:pointer;" />
                 <span>Lowest rent first</span>
             </div>
         </div>
@@ -112,8 +111,11 @@ $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
         <?php
         foreach ($properties as $property) {
             $property_images = glob("img/properties/" . $property['id'] . "/*");
+            if (empty($property_images)) {
+                $property_images = array('img/logo.png');
+            }
         ?>
-            <div class="property-card property-id-<?= $property['id'] ?> row">
+            <div class="property-card property-id-<?= $property['id'] ?> row" data-rent="<?= intval($property['rent']) ?>" data-gender="<?= htmlspecialchars($property['gender'], ENT_QUOTES, 'UTF-8') ?>">
                 <div class="image-container col-md-4">
                     <img src="<?= $property_images[0] ?>" />
                 </div>
@@ -142,6 +144,7 @@ $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
                                 }
                             }
                             ?>
+
                         </div>
                         <div class="interested-container">
                             <?php
@@ -177,20 +180,17 @@ $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
                         <div class="property-address"><?= $property['address'] ?></div>
                         <div class="property-gender">
                             <?php
+                            $gender_img = 'img/unisex.png';
                             if ($property['gender'] == "male") {
-                            ?>
-                                <img src="img/male.png" />
-                            <?php
+                                $gender_img = 'img/male.png';
                             } elseif ($property['gender'] == "female") {
-                            ?>
-                                <img src="img/female.png" />
-                            <?php
-                            } else {
-                            ?>
-                                <img src="img/unisex.png" />
-                            <?php
+                                $gender_img = 'img/female.png';
+                            }
+                            if (!file_exists($gender_img)) {
+                                $gender_img = 'img/placeholder.png';
                             }
                             ?>
+                            <img src="<?= $gender_img ?>" />
                         </div>
                     </div>
                     <div class="row no-gutters">
@@ -231,16 +231,16 @@ $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
                     <h5>Gender</h5>
                     <hr />
                     <div>
-                        <button class="btn btn-outline-dark btn-active">
+                        <button class="btn btn-outline-dark gender-filter-btn btn-active" data-filter="none">
                             No Filter
                         </button>
-                        <button class="btn btn-outline-dark">
+                        <button class="btn btn-outline-dark gender-filter-btn" data-filter="unisex">
                             <i class="fas fa-venus-mars"></i>Unisex
                         </button>
-                        <button class="btn btn-outline-dark">
+                        <button class="btn btn-outline-dark gender-filter-btn" data-filter="male">
                             <i class="fas fa-mars"></i>Male
                         </button>
-                        <button class="btn btn-outline-dark">
+                        <button class="btn btn-outline-dark gender-filter-btn" data-filter="female">
                             <i class="fas fa-venus"></i>Female
                         </button>
                     </div>

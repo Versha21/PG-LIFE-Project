@@ -73,7 +73,6 @@ if (!$result_4) {
 $interested_users = mysqli_fetch_all($result_4, MYSQLI_ASSOC);
 $interested_users_count = mysqli_num_rows($result_4);
 ?>
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -111,6 +110,9 @@ $interested_users_count = mysqli_num_rows($result_4);
         <ol class="carousel-indicators">
             <?php
             $property_images = glob("img/properties/" . $property['property_id'] . "/*");
+            if (empty($property_images)) {
+                $property_images = array('img/logo.png');
+            }
             foreach ($property_images as $index => $property_image) {
             ?>
                 <li data-target="#property-images" data-slide-to="<?= $index ?>" class="<?= $index == 0 ? "active" : ""; ?>"></li>
@@ -230,9 +232,13 @@ $interested_users_count = mysqli_num_rows($result_4);
                     <?php
                     foreach ($amenities as $amenity) {
                         if ($amenity['type'] == "Building") {
+                            $icon_path = 'img/amenities/' . $amenity['icon'] . '.svg';
+                            if (!file_exists($icon_path)) {
+                                $icon_path = 'img/amenities/ac.svg';
+                            }
                     ?>
                             <div class="amenity-container">
-                                <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
+                                <img src="<?= $icon_path ?>">
                                 <span><?= $amenity['name'] ?></span>
                             </div>
                     <?php
@@ -246,9 +252,13 @@ $interested_users_count = mysqli_num_rows($result_4);
                     <?php
                     foreach ($amenities as $amenity) {
                         if ($amenity['type'] == "Common Area") {
+                            $icon_path = 'img/amenities/' . $amenity['icon'] . '.svg';
+                            if (!file_exists($icon_path)) {
+                                $icon_path = 'img/amenities/ac.svg';
+                            }
                     ?>
                             <div class="amenity-container">
-                                <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
+                                <img src="<?= $icon_path ?>">
                                 <span><?= $amenity['name'] ?></span>
                             </div>
                     <?php
@@ -262,9 +272,13 @@ $interested_users_count = mysqli_num_rows($result_4);
                     <?php
                     foreach ($amenities as $amenity) {
                         if ($amenity['type'] == "Bedroom") {
+                            $icon_path = 'img/amenities/' . $amenity['icon'] . '.svg';
+                            if (!file_exists($icon_path)) {
+                                $icon_path = 'img/amenities/ac.svg';
+                            }
                     ?>
                             <div class="amenity-container">
-                                <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
+                                <img src="<?= $icon_path ?>">
                                 <span><?= $amenity['name'] ?></span>
                             </div>
                     <?php
@@ -278,9 +292,13 @@ $interested_users_count = mysqli_num_rows($result_4);
                     <?php
                     foreach ($amenities as $amenity) {
                         if ($amenity['type'] == "Washroom") {
+                            $icon_path = 'img/amenities/' . $amenity['icon'] . '.svg';
+                            if (!file_exists($icon_path)) {
+                                $icon_path = 'img/amenities/ac.svg';
+                            }
                     ?>
                             <div class="amenity-container">
-                                <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
+                                <img src="<?= $icon_path ?>">
                                 <span><?= $amenity['name'] ?></span>
                             </div>
                     <?php

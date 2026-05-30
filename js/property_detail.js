@@ -27,19 +27,31 @@ window.addEventListener("load", function () {
 var toggle_interested_success = function (event) {
     document.getElementById("loading").style.display = 'none';
 
-    var response = JSON.parse(event.target.responseText);
+    var response;
+    try {
+        response = JSON.parse(event.target.responseText);
+    } catch (e) {
+        console.error('Invalid JSON response', event.target.responseText);
+        alert('Unexpected server response. Please try again.');
+        return;
+    }
     if (response.success) {
         var is_interested_image = document.getElementsByClassName("is-interested-image")[0];
         var interested_user_count = document.getElementsByClassName("interested-user-count")[0];
 
-        if (response.is_interested) {
-            is_interested_image.classList.add("fas");
-            is_interested_image.classList.remove("far");
-            interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) + 1;
-        } else {
-            is_interested_image.classList.add("far");
-            is_interested_image.classList.remove("fas");
-            interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) - 1;
+        if (is_interested_image) {
+            if (response.is_interested) {
+                is_interested_image.classList.add("fas");
+                is_interested_image.classList.remove("far");
+            } else {
+                is_interested_image.classList.add("far");
+                is_interested_image.classList.remove("fas");
+            }
+        }
+
+        if (interested_user_count) {
+            var current = parseInt(interested_user_count.innerHTML) || 0;
+            interested_user_count.innerHTML = response.is_interested ? current + 1 : Math.max(0, current - 1);
         }
     } else if (!response.success && !response.is_logged_in) {
         window.$("#login-modal").modal("show");

@@ -27,7 +27,8 @@ if (!preg_match('/^[0-9]{10}$/', $phone)) {
     exit;
 }
 
-$password_hashed = sha1($password);
+// Use modern password hashing
+$password_hashed = password_hash($password, PASSWORD_DEFAULT);
 
 // Check if email already exists using prepared statement
 $sql_check = "SELECT * FROM users WHERE email = ?";
