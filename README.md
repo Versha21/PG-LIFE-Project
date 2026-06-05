@@ -36,15 +36,15 @@ PG LIFE is a web-based PG/Hostel listing platform where users can view available
 
 ---
 
-## ⚠️ Important Notes
-- Make sure MySQL database is connected properly
-- Update `localhost` to live DB host during deployment
+## ⚠️ Notes
+- Ensure database connection is properly configured
+- Replace localhost credentials when deploying live
 
 ---
 
 ## 👨‍💻 Author
-Developed by Versha
-
+Versha Dewangan  
+(Project developed as part of Internshala training)
 ---
 
 ##📷 Screenshot
