@@ -31,7 +31,7 @@ PG LIFE is a web-based PG/Hostel listing platform where users can view available
 6. ---
 
 ## 🌐 Deployment
-- Upload project to hosting (InfinityFree / Render / etc.)
+- Upload project to hosting (InfinityFree )
 - Update database credentials in `database_connect.php`
 
 ---
